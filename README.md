@@ -3,10 +3,11 @@
 [![Made with Love](https://img.shields.io/badge/Made%20with-Love-ff69b4.svg)](https://madewithlove.org.in)
 [![GitHub](https://img.shields.io/badge/GitHub-Chobits--Chi--TTS-181717?logo=github)](https://github.com/chenxin199305/Chobits-Chi-TTS)
 [![Dataset: Chobits-Chi-Voice](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Chobits--Chi--Voice-yellow)](https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice)
+[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-Chobits--Chi--TTS-yellow)](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Language: Japanese](https://img.shields.io/badge/Language-Japanese-green.svg)]()
 
-> ✅ 首轮模型已训练完成并人工试听通过（GPT-SoVITS v2Pro，e10 checkpoint），见[模型文件](#模型文件)。
+> ✅ 首轮模型已训练完成并人工试听通过（GPT-SoVITS v2Pro，e10 checkpoint），权重已发布到 [Hugging Face](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)，见[模型文件](#模型文件)。
 
 《人形电脑天使心》(Chobits) 中 **小叽 (Chi / ちぃ)** 角色的 TTS（语音合成）模型项目。
 
@@ -44,16 +45,24 @@
 
 ## 模型文件
 
-当前首选权重（人工试听选定，v2Pro，e10）导出在 `models/`（**不入库、暂未公开发布，需按快速开始自行训练**）：
+当前首选权重（人工试听选定，v2Pro，e10）已发布到 Hugging Face：
+**[huggingface.co/chenxin199305/Chobits-Chi-TTS](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)**
+
+```bash
+# 下载模型 (约 290MB)
+pip install huggingface_hub
+hf download chenxin199305/Chobits-Chi-TTS --local-dir models/
+```
 
 | 文件 | 说明 |
 | --- | --- |
-| `models/chi-e10.ckpt` | GPT 语义模型（149MB） |
-| `models/chi_e10_s1210.pth` | SoVITS 声学模型（129MB） |
-| `models/ref_audio.wav` | 参考音频（ep07「秀樹は地位を拾ってくれた」，4.2s） |
-| `models/ref_text.txt` | 参考音频对应文本（同 `examples/ref_text.txt`） |
+| `chi-e10.ckpt` | GPT 语义模型（149MB） |
+| `chi_e10_s1210.pth` | SoVITS 声学模型（129MB） |
+| `ref_audio.wav` | 参考音频（ep07「秀樹は地位を拾ってくれた」，4.2s） |
+| `ref_text.txt` | 参考音频对应文本（同 `examples/ref_text.txt`） |
 
-训练产生的其他 checkpoint 在 `GPT-SoVITS/GPT_weights_v2Pro/` 与 `GPT-SoVITS/SoVITS_weights_v2Pro/`（e5/e10/e15），试听样本在 `outputs/inference/`。
+下载后可直接推理（见快速开始第 5 步，将权重路径替换为 `models/` 内文件），无需训练。
+本地训练产生的全部 checkpoint 在 `GPT-SoVITS/GPT_weights_v2Pro/` 与 `GPT-SoVITS/SoVITS_weights_v2Pro/`（e5/e10/e15），试听样本在 `outputs/inference/`。
 
 ## 仓库结构
 
@@ -160,7 +169,7 @@ python GPT_SoVITS/inference_cli.py \
 `LD_LIBRARY_PATH` 前缀是 torchcodec 加载 `libnppicc.so.12` 所需（见 2-c）。
 也可以 `python webui.py` 启动浏览器界面操作（localhost:9874）。
 
-> 本项目的 e10 权重与参考音频尚未公开发布，目前需自行训练获得；
+> 权重已在 Hugging Face 发布，不想训练可直接下载（见[模型文件](#模型文件)）；
 > 参考音频可用 `data/wavs/` 中任意一条 3–8 秒的片段替代
 > （`ref_text.txt` 内容需与音频一致，参考 `data/metadata.csv`）。
 
