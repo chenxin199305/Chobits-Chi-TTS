@@ -1,0 +1,9 @@
+GPT-SoVITS/
+data/wavs/
+# 含本机绝对路径, 由 tools/clean_dataset.py 重新生成
+data/gpt_sovits.list
+# 导出的模型权重, 体积大, 发布到 Hugging Face 而非 git
+models/
+outputs/
+__pycache__/
+.venv/
