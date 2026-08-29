@@ -76,8 +76,10 @@ Chobits-Chi-TTS/
 │   ├── metadata.csv           # 文件名|文本
 │   ├── gpt_sovits.list        # GPT-SoVITS 训练格式 (含本机绝对路径, 不入库)
 │   └── cleaning_report.csv    # 清洗记录 (修复/剔除明细, 供人工复核)
-├── tools/                  # 数据整理脚本
-│   └── clean_dataset.py       # 数据集清洗 (修复 Whisper 误转写, 剔除脏条目)
+├── tools/                  # 工具脚本
+│   ├── clean_dataset.py       # 数据集清洗 (修复 Whisper 误转写, 剔除脏条目)
+│   ├── setup_env.sh           # 环境一键搭建 (Miniconda + install.sh + 版本修复, 幂等)
+│   └── start_tts_api.sh       # 启动 TTS HTTP 服务 (api_v2, 可直接运行或供 systemd 调用)
 ├── training/               # 训练流水线
 │   └── train_chi.py           # 预处理 + SoVITS/GPT 微调一键驱动 (幂等, 可续跑)
 ├── examples/               # 示例
@@ -114,21 +116,28 @@ cd GPT-SoVITS && git checkout 48b1a0169a28582a8984402f82cf438d3bfa6aca
 TERM=xterm bash install.sh --device CU128 --source ModelScope
 ```
 
-install.sh 完成后，**按顺序**执行以下修复（2026-08 时点的上游版本兼容问题）：
+> 也可以直接 `bash tools/setup_env.sh` 自动完成本步全部内容（Miniconda、conda 环境、
+> 克隆、install.sh 及下方全部修复），幂等可重复执行。
+
+install.sh 完成后，**按顺序**执行以下修复（2026-08 时点的上游版本兼容问题，已全部内置于 `tools/setup_env.sh`）：
 
 ```bash
-# a) fastapi 0.141/starlette 1.6 与 gradio 4.x 不兼容, 回退
-pip install 'fastapi[standard]==0.115.6' 'starlette==0.41.3' 'uvicorn==0.32.0'
+# a) cu128 索引现已解析出 cu130 构建的 torch (需 580+ 驱动), 锁定到 cu128 版
+pip install --force-reinstall "torch==2.11.0+cu128" "torchaudio==2.11.0+cu128" "torchcodec==0.11.1+cu128" \
+  --index-url https://download.pytorch.org/whl/cu128
 
-# b) install.sh 装的 PyPI 版 torchaudio 2.11 按 CUDA 13 编译, 与 torch cu128 不兼容, 换装 cu128 版
-pip install --force-reinstall --no-deps torchaudio --index-url https://download.pytorch.org/whl/cu128
+# b) fastapi 0.141/starlette 1.6 与 gradio 4.x 不兼容, 回退
+pip install 'fastapi[standard]==0.115.6' 'starlette==0.41.3' 'uvicorn==0.32.0'
 
 # c) torchcodec 依赖: npp 动态库 + ffmpeg<=8
 pip install nvidia-npp-cu12
 conda install -c conda-forge --override-channels 'ffmpeg=7' -y
 
-# d) nltk 3.10 需要 punkt_tab (install.sh 下载的 nltk_data 不含)
-python -m nltk.downloader punkt_tab
+# d) nltk 3.10 需要 punkt_tab (install.sh 下载的 nltk_data 不含);
+#    raw.githubusercontent.com 被限速时走 jsDelivr 镜像
+python -m nltk.downloader punkt_tab || \
+  (curl -fL -o /tmp/punkt_tab.zip https://cdn.jsdelivr.net/gh/nltk/nltk_data@gh-pages/packages/tokenizers/punkt_tab.zip \
+   && unzip -q -o /tmp/punkt_tab.zip -d "$CONDA_PREFIX/nltk_data/tokenizers")
 ```
 
 > PyPI 下载缓慢时换清华源 `-i https://pypi.tuna.tsinghua.edu.cn/simple`；
@@ -156,7 +165,7 @@ python training/train_chi.py
 
 ```bash
 cd GPT-SoVITS
-version=v2Pro LD_LIBRARY_PATH=$CONDA_PREFIX/lib/python3.10/site-packages/nvidia/npp/lib \
+version=v2Pro LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.10/site-packages/nvidia/npp/lib \
 python GPT_SoVITS/inference_cli.py \
   --gpt_model GPT_weights_v2Pro/chi-e10.ckpt \
   --sovits_model SoVITS_weights_v2Pro/chi_e10_s1210.pth \
@@ -166,12 +175,62 @@ python GPT_SoVITS/inference_cli.py \
   --output_path ../outputs/inference/run1
 ```
 
-`LD_LIBRARY_PATH` 前缀是 torchcodec 加载 `libnppicc.so.12` 所需（见 2-c）。
+`LD_LIBRARY_PATH` 前缀的作用：torchcodec 加载 `libnppicc.so.12`（见 2-c），以及
+pyopenjtalk 加载新版 libstdc++（Ubuntu 20.04 系统库缺 `GLIBCXX_3.4.29`，需用 conda 环境的）。
 也可以 `python webui.py` 启动浏览器界面操作（localhost:9874）。
 
 > 权重已在 Hugging Face 发布，不想训练可直接下载（见[模型文件](#模型文件)）；
 > 参考音频可用 `data/wavs/` 中任意一条 3–8 秒的片段替代
 > （`ref_text.txt` 内容需与音频一致，参考 `data/metadata.csv`）。
+
+## 部署为 HTTP 服务
+
+推理只需要[模型文件](#模型文件)中的权重与环境（`tools/setup_env.sh` 一键搭建），无需训练数据。
+
+```bash
+# 启动 api_v2 (0.0.0.0:9880, 加载 models/ 下 e10 权重, v2Pro + cuda fp16)
+bash tools/start_tts_api.sh 9880
+```
+
+生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启）：
+
+```ini
+# /etc/systemd/system/chi-tts.service
+[Unit]
+Description=Chobits Chi TTS (GPT-SoVITS api_v2)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+ExecStart=/bin/bash /home/ubuntu/Github/Chobits-Chi-TTS/tools/start_tts_api.sh 9880
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl enable --now chi-tts
+journalctl -u chi-tts -f   # 查看日志
+```
+
+调用示例（`ref_audio_path` 为服务器上的绝对路径）：
+
+```bash
+curl -G http://<服务器IP>:9880/tts \
+  --data-urlencode "text=ちぃ、秀樹のこと、大好き。" \
+  --data-urlencode "text_lang=ja" \
+  --data-urlencode "ref_audio_path=$PWD/models/ref_audio.wav" \
+  --data-urlencode "prompt_lang=ja" \
+  --data-urlencode "prompt_text=秀樹は地位を拾ってくれた" \
+  --data-urlencode "media_type=wav" -o out.wav
+```
+
+注意在云安全组放行 TCP 9880；对外提供服务须遵守 [CC BY-NC-SA 4.0](#许可协议)（非商业）。
 
 ## 许可协议
 
