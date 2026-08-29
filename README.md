@@ -198,7 +198,7 @@ bash tools/start_tts_api.sh 9880
 生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启），密钥通过 `EnvironmentFile` 注入：
 
 ```ini
-# /etc/systemd/system/chi-tts.service
+# /etc/systemd/system/chobits-chi-tts.service
 [Unit]
 Description=Chobits Chi TTS (GPT-SoVITS api_v2)
 After=network-online.target
@@ -211,22 +211,35 @@ ExecStart=/bin/bash /home/ubuntu/Github/Chobits-Chi-TTS/tools/start_tts_api.sh 9
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
-EnvironmentFile=/etc/chi-tts.env
+EnvironmentFile=/etc/chobits-chi-tts.env
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ```bash
-# /etc/chi-tts.env (chmod 600), 内容: CHI_TTS_API_KEY=<随机密钥>
-sudo systemctl daemon-reload && sudo systemctl enable --now chi-tts
-journalctl -u chi-tts -f   # 查看日志
+# /etc/chobits-chi-tts.env (chmod 600), 内容:
+#   CHI_TTS_API_KEY=<随机密钥>
+#   CHI_TTS_SSL_CERTFILE=/etc/chobits-chi-tts.crt   (可选, 见下方 TLS)
+#   CHI_TTS_SSL_KEYFILE=/etc/chobits-chi-tts.key    (可选, 与上一条同时设置)
+sudo systemctl daemon-reload && sudo systemctl enable --now chobits-chi-tts
+journalctl -u chobits-chi-tts -f   # 查看日志
+```
+
+启用 HTTPS（自签名证书，客户端需信任该证书或用 `-k` 跳过校验）：
+
+```bash
+sudo openssl req -x509 -newkey rsa:2048 -nodes \
+  -keyout /etc/chobits-chi-tts.key -out /etc/chobits-chi-tts.crt -days 3650 \
+  -subj "/CN=chi-tts" -addext "subjectAltName=IP:<服务器IP>,IP:127.0.0.1"
+sudo chmod 600 /etc/chobits-chi-tts.key
+# 在 /etc/chobits-chi-tts.env 中设置 CHI_TTS_SSL_CERTFILE / CHI_TTS_SSL_KEYFILE 后重启服务
 ```
 
 调用示例（`ref_audio_path` 为服务器上的绝对路径；密钥用 `Authorization: Bearer` 或 `?api_key=` 传递）：
 
 ```bash
-curl -G http://<服务器IP>:9880/tts \
+curl -k -G https://<服务器IP>:9880/tts \
   -H "Authorization: Bearer <API_KEY>" \
   --data-urlencode "text=ちぃ、秀樹のこと、大好き。" \
   --data-urlencode "text_lang=ja" \
@@ -234,12 +247,14 @@ curl -G http://<服务器IP>:9880/tts \
   --data-urlencode "prompt_lang=ja" \
   --data-urlencode "prompt_text=秀樹は地位を拾ってくれた" \
   --data-urlencode "media_type=wav" -o out.wav
+# 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
 
-其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 每 IP 每分钟限流次数，默认 30，0 关闭）。
+其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 每 IP 每分钟限流次数，默认 30，0 关闭）；
+`CHI_TTS_SSL_CERTFILE` / `CHI_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）。
 
 注意在云安全组放行 TCP 9880；对外提供服务须遵守 [CC BY-NC-SA 4.0](#许可协议)（非商业）。
-明文 HTTP 下密钥可被中间人嗅探，面向公众分发应用时建议由后端服务代为调用，不要把唯一密钥嵌进客户端。
+面向公众分发应用时建议由后端服务代为调用，不要把唯一密钥嵌进客户端。
 
 ## 许可协议
 

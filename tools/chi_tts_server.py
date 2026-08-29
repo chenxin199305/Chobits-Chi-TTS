@@ -4,11 +4,12 @@
   - API Key: 环境变量 CHI_TTS_API_KEY (必填, 未设置则拒绝启动).
     客户端通过 `Authorization: Bearer <key>` 或 `?api_key=<key>` 提供.
   - 限流: /tts 每 IP 每分钟最多 CHI_TTS_RATE_LIMIT 次 (默认 30, 设 0 关闭).
+  - TLS: 同时设置 CHI_TTS_SSL_CERTFILE / CHI_TTS_SSL_KEYFILE 时以 HTTPS 启动.
 
 参数与 api_v2.py 完全一致:
   python tools/chi_tts_server.py -c GPT_SoVITS/configs/tts_infer_chi.yaml -a 0.0.0.0 -p 9880
 
-注意: 明文 HTTP 下 API Key 会被中间人嗅探, 仅适合内网/低风险公网场景;
+注意: 未启用 TLS 时 API Key 明文传输, 仅适合内网/低风险公网场景;
 面向公众分发应用时, 建议由后端服务代为调用, 不要把唯一密钥嵌进客户端.
 """
 
@@ -22,6 +23,12 @@ if not API_KEY:
     sys.exit("[错误] 未设置 CHI_TTS_API_KEY 环境变量, 拒绝以无鉴权方式启动")
 
 RATE_LIMIT = int(os.environ.get("CHI_TTS_RATE_LIMIT", "30"))
+
+# TLS: 两个变量都设置时以 HTTPS 启动 (自签名证书见 README「部署为 HTTP 服务」)
+SSL_CERTFILE = os.environ.get("CHI_TTS_SSL_CERTFILE", "")
+SSL_KEYFILE = os.environ.get("CHI_TTS_SSL_KEYFILE", "")
+if bool(SSL_CERTFILE) != bool(SSL_KEYFILE):
+    sys.exit("[错误] CHI_TTS_SSL_CERTFILE 与 CHI_TTS_SSL_KEYFILE 必须同时设置")
 
 import uvicorn  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
@@ -62,4 +69,11 @@ if __name__ == "__main__":
     host = api_v2.args.bind_addr
     if host == "None":  # 与上游一致: -a None 监听双栈
         host = None
-    uvicorn.run(app=APP, host=host, port=api_v2.args.port, workers=1)
+    uvicorn.run(
+        app=APP,
+        host=host,
+        port=api_v2.args.port,
+        workers=1,
+        ssl_certfile=SSL_CERTFILE or None,
+        ssl_keyfile=SSL_KEYFILE or None,
+    )
