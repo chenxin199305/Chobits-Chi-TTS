@@ -17,9 +17,7 @@
 
 ## 示例试听
 
-[![小叽语音合成示例](examples/assets/cover.png)](https://github.com/chenxin199305/Chobits-Chi-TTS/blob/main/examples/assets/demo.mp4)
-
-▶ 点击图片跳转示例视频（GitHub 文件页内可直接播放）。
+https://github.com/user-attachments/assets/06c1976c-84c9-4fd2-b472-d5cdfe9be485
 
 合成文本（`examples/target_text.txt`）：`ちぃ、秀樹のこと、大好き。ずっと一緒にいる。`
 （GPT-SoVITS v2Pro · e10 checkpoint 合成）
