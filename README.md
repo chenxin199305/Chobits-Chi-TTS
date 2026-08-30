@@ -15,6 +15,15 @@
 
 > ⚠️ 注意：原始动画音频的版权归其权利方所有。本项目仅供学习与研究使用，请勿用于商业用途。
 
+## 示例试听
+
+[![小叽语音合成示例](examples/assets/cover.png)](https://github.com/chenxin199305/Chobits-Chi-TTS/blob/main/examples/assets/demo.mp4)
+
+▶ 点击图片跳转示例视频（GitHub 文件页内可直接播放）。
+
+合成文本（`examples/target_text.txt`）：`ちぃ、秀樹のこと、大好き。ずっと一緒にいる。`
+（GPT-SoVITS v2Pro · e10 checkpoint 合成）
+
 ## 数据
 
 训练数据来自 [Chobits-Chi-Voice](https://github.com/chenxin199305/Chobits-Chi-Voice) 数据集（[Hugging Face](https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice)）：
