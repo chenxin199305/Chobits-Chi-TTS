@@ -3,7 +3,7 @@
 在 api_v2 全部端点前加一层校验:
   - API Key: 环境变量 CHI_TTS_API_KEY (必填, 未设置则拒绝启动).
     客户端通过 `Authorization: Bearer <key>` 或 `?api_key=<key>` 提供.
-  - 限流: /tts 每 IP 每分钟最多 CHI_TTS_RATE_LIMIT 次 (默认 30, 设 0 关闭).
+  - 限流: /tts 每 IP 每分钟最多 CHI_TTS_RATE_LIMIT 次 (默认 60, 设 0 关闭).
   - TLS: 同时设置 CHI_TTS_SSL_CERTFILE / CHI_TTS_SSL_KEYFILE 时以 HTTPS 启动.
 
 参数与 api_v2.py 完全一致:
@@ -22,7 +22,7 @@ API_KEY = os.environ.get("CHI_TTS_API_KEY", "")
 if not API_KEY:
     sys.exit("[错误] 未设置 CHI_TTS_API_KEY 环境变量, 拒绝以无鉴权方式启动")
 
-RATE_LIMIT = int(os.environ.get("CHI_TTS_RATE_LIMIT", "30"))
+RATE_LIMIT = int(os.environ.get("CHI_TTS_RATE_LIMIT", "60"))
 
 # TLS: 两个变量都设置时以 HTTPS 启动 (自签名证书见 README「部署为 HTTP 服务」)
 SSL_CERTFILE = os.environ.get("CHI_TTS_SSL_CERTFILE", "")

@@ -257,7 +257,7 @@ curl -k -G https://<服务器IP>:9880/tts \
 # 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
 
-其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 每 IP 每分钟限流次数，默认 30，0 关闭）；
+其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 每 IP 每分钟限流次数，默认 60，0 关闭）；
 `CHI_TTS_SSL_CERTFILE` / `CHI_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）。
 
 注意在云安全组放行 TCP 9880；对外提供服务须遵守 [CC BY-NC-SA 4.0](#许可协议)（非商业）。
