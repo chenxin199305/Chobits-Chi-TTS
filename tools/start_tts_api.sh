@@ -1,5 +1,5 @@
 #!/bin/bash
-# 启动小叽 TTS HTTP 服务 (tools/chi_tts_server.py: api_v2 + API Key 鉴权 + 限流)
+# 启动小叽 TTS HTTP 服务 (tools/server.py: api_v2 + API Key 鉴权 + 限流)
 # 用法: bash tools/start_tts_api.sh [端口, 默认 9880]
 # 需要环境变量 CHI_TTS_API_KEY (systemd 从 /etc/chi-tts.env 读取);
 # MINICONDA 可覆盖 Miniconda 安装路径 (默认 $HOME/miniconda3)
@@ -36,7 +36,7 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.10/site-pack
 export version=v2Pro
 
 # 启动脚本 (GPT-SoVITS api_v2 的鉴权包装层, 需要 CHI_TTS_API_KEY 环境变量)
-exec python "$REPO_ROOT/tools/chi_tts_server.py" \
+exec python "$REPO_ROOT/tools/server.py" \
   -c "$CONFIG" \
   -a 0.0.0.0 \
   -p "$PORT"

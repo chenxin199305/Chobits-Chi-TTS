@@ -86,7 +86,7 @@ Chobits-Chi-TTS/
 ├── tools/                  # 工具脚本
 │   ├── clean_dataset.py       # 数据集清洗 (修复 Whisper 误转写, 剔除脏条目)
 │   ├── setup_env.sh           # 环境一键搭建 (Miniconda + install.sh + 版本修复, 幂等)
-│   ├── chi_tts_server.py      # TTS HTTP 服务 (api_v2 + API Key 鉴权 + 限流)
+│   ├── server.py              # TTS HTTP 服务 (api_v2 + API Key 鉴权 + 限流)
 │   └── start_tts_api.sh       # 启动 TTS 服务 (可直接运行或供 systemd 调用)
 ├── training/               # 训练流水线
 │   └── train_chi.py           # 预处理 + SoVITS/GPT 微调一键驱动 (幂等, 可续跑)
@@ -197,7 +197,7 @@ pyopenjtalk 加载新版 libstdc++（Ubuntu 20.04 系统库缺 `GLIBCXX_3.4.29`�
 
 ```bash
 # 启动服务 (0.0.0.0:9880, 加载 models/ 下 e10 权重, v2Pro + cuda fp16)
-# 服务为 tools/chi_tts_server.py: 在上游 api_v2 前加了 API Key 鉴权与限流
+# 服务为 tools/server.py: 在上游 api_v2 前加了 API Key 鉴权与限流
 export CHI_TTS_API_KEY=<随机密钥>   # 必填, 未设置会拒绝启动
 bash tools/start_tts_api.sh 9880
 ```
@@ -243,7 +243,21 @@ sudo chmod 600 /etc/chobits-chi-tts.key
 # 在 /etc/chobits-chi-tts.env 中设置 CHI_TTS_SSL_CERTFILE / CHI_TTS_SSL_KEYFILE 后重启服务
 ```
 
-调用示例（`ref_audio_path` 为服务器上的绝对路径；密钥用 `Authorization: Bearer` 或 `?api_key=` 传递）：
+OpenAI TTS 兼容调用（推荐；客户端 `baseUrl` 填 `http(s)://<服务器IP>:9880/v1`，
+`GET /v1/models` 返回固定模型 `chi-tts`，`voice` 当前仅 `chi`，`response_format` 支持
+`wav`/`aac`/`opus`，默认 `wav`。`wav` 为流式输出（边合成边推流，首字延迟低）；
+`aac`/`opus` 为合成完成后一次性返回）：
+
+```bash
+curl -k -X POST https://<服务器IP>:9880/v1/audio/speech \
+  -H "Authorization: Bearer <API_KEY>" \
+  -H 'Content-Type: application/json' \
+  -d '{"model": "chi-tts", "input": "ちぃ、秀樹のこと、大好き。", "voice": "chi"}' \
+  -o out.wav
+# 未启用 TLS 时把 https 换成 http、去掉 -k 即可
+```
+
+原生 `/tts` 调用示例（`ref_audio_path` 为服务器上的绝对路径；密钥用 `Authorization: Bearer` 或 `?api_key=` 传递）：
 
 ```bash
 curl -k -G https://<服务器IP>:9880/tts \
@@ -257,8 +271,9 @@ curl -k -G https://<服务器IP>:9880/tts \
 # 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
 
-其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 每 IP 每分钟限流次数，默认 60，0 关闭）；
-`CHI_TTS_SSL_CERTFILE` / `CHI_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）。
+其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 与 `/v1/audio/speech` 每 IP 每分钟限流次数，默认 60，0 关闭）；
+`CHI_TTS_SSL_CERTFILE` / `CHI_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）；
+`CHI_TTS_REF_AUDIO` / `CHI_TTS_REF_TEXT_FILE`（覆盖 OpenAI 垫片 `chi` 音色的参考音频/参考文本路径）。
 
 注意在云安全组放行 TCP 9880；对外提供服务须遵守 [CC BY-NC-SA 4.0](#许可协议)（非商业）。
 面向公众分发应用时建议由后端服务代为调用，不要把唯一密钥嵌进客户端。
