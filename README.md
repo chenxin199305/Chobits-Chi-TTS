@@ -1,7 +1,7 @@
-# Chobits-Chi-TTS
+# Chobits-Chii-TTS
 
 [![Made with Love](https://img.shields.io/badge/Made%20with-Love-ff69b4.svg)](https://madewithlove.org.in)
-[![GitHub](https://img.shields.io/badge/GitHub-Chobits--Chi--TTS-181717?logo=github)](https://github.com/chenxin199305/Chobits-Chi-TTS)
+[![GitHub](https://img.shields.io/badge/GitHub-Chobits--Chi--TTS-181717?logo=github)](https://github.com/chenxin199305/Chobits-Chii-TTS)
 [![Dataset: Chobits-Chi-Voice](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Chobits--Chi--Voice-yellow)](https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice)
 [![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-Chobits--Chi--TTS-yellow)](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
@@ -9,9 +9,9 @@
 
 > ✅ 首轮模型已训练完成并人工试听通过（GPT-SoVITS v2Pro，e10 checkpoint），权重已发布到 [Hugging Face](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)，见[模型文件](#模型文件)。
 
-《人形电脑天使心》(Chobits) 中 **小叽 (Chi / ちぃ)** 角色的 TTS（语音合成）模型项目。
+《人形电脑天使心》(Chobits) 中 **小叽 (Chii / ちぃ)** 角色的 TTS（语音合成）模型项目。
 
-本项目以 [Chobits-Chi-Voice](https://github.com/chenxin199305/Chobits-Chi-Voice) 数据集为训练数据，基于 [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) 微调出小叽声线的文本转语音模型。
+本项目以 [Chobits-Chii-Voice](https://github.com/chenxin199305/Chobits-Chii-Voice) 数据集为训练数据，基于 [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) 微调出小叽声线的文本转语音模型。
 
 > ⚠️ 注意：原始动画音频的版权归其权利方所有。本项目仅供学习与研究使用，请勿用于商业用途。
 
@@ -41,8 +41,8 @@ https://github.com/user-attachments/assets/06c1976c-84c9-4fd2-b472-d5cdfe9be485
 
 基于 [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) 的少样本语音克隆流程（v2Pro，2026-08 已跑通首轮）：
 
-1. ~~数据准备~~：✅ `tools/clean_dataset.py` 清洗 Chobits-Chi-Voice 数据集（修复 Whisper 误转写 18 条、剔除 4 条），输出 `data/gpt_sovits.list`（483 条 / 21.4 分钟）
-2. ~~预处理~~：✅ 文本→音素、HuBERT SSL 特征、说话人嵌入（v2Pro）、语义 token（VQ），产物在 `GPT-SoVITS/logs/chi/`
+1. ~~数据准备~~：✅ `tools/clean_dataset.py` 清洗 Chobits-Chii-Voice 数据集（修复 Whisper 误转写 18 条、剔除 4 条），输出 `data/gpt_sovits.list`（483 条 / 21.4 分钟）
+2. ~~预处理~~：✅ 文本→音素、HuBERT SSL 特征、说话人嵌入（v2Pro）、语义 token（VQ），首轮产物在 `GPT-SoVITS/logs/chi/`（历史目录保持不动；EXP_NAME 已改名 `chii`，新训练产物写入 `GPT-SoVITS/logs/chii/`）
 3. ~~微调 SoVITS~~：✅ v2Pro 全量微调，batch 4 × 15 epochs → `GPT-SoVITS/SoVITS_weights_v2Pro/chi_e{5,10,15}_*.pth`
 4. ~~微调 GPT~~：✅ batch 4 × 15 epochs → `GPT-SoVITS/GPT_weights_v2Pro/chi-e{5,10,15}.ckpt`
 5. **推理评估**：✅ 首轮合成已产出 `outputs/inference/e{5,10,15}/output.wav`（32kHz）。人工试听选定 **e10**（`chi-e10.ckpt` + `chi_e10_s1210.pth`）为当前首选
@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/06c1976c-84c9-4fd2-b472-d5cdfe9be485
 ```bash
 # 下载模型 (约 290MB)
 pip install huggingface_hub
-hf download chenxin199305/Chobits-Chi-TTS --local-dir models/
+hf download chenxin199305/Chobits-Chii-TTS --local-dir models/
 ```
 
 | 文件 | 说明 |
@@ -68,18 +68,19 @@ hf download chenxin199305/Chobits-Chi-TTS --local-dir models/
 | `ref_audio.wav` | 参考音频（ep07「秀樹は地位を拾ってくれた」，4.2s） |
 | `ref_text.txt` | 参考音频对应文本（同 `examples/ref_text.txt`） |
 
+首轮发布的权重文件名沿用 `chi-*`/`chi_*` 拼写（已发布的历史产物不改名）；本地重新训练的产物将为 `chii-*`/`chii_*`。
 下载后可直接推理（见快速开始第 5 步，将权重路径替换为 `models/` 内文件），无需训练。
 本地训练产生的全部 checkpoint 在 `GPT-SoVITS/GPT_weights_v2Pro/` 与 `GPT-SoVITS/SoVITS_weights_v2Pro/`（e5/e10/e15），试听样本在 `outputs/inference/`。
 
 ## 仓库结构
 
 ```
-Chobits-Chi-TTS/
+Chobits-Chii-TTS/
 ├── README.md               # 本文件
 ├── LICENSE                 # CC BY-NC-SA 4.0
 ├── .gitignore
 ├── data/                   # 清洗后的训练数据 (由 tools/clean_dataset.py 生成)
-│   ├── wavs/                  # 483 个音频片段 (不入库, 由脚本从 Chobits-Chi-Voice 复制)
+│   ├── wavs/                  # 483 个音频片段 (不入库, 由脚本从 Chobits-Chii-Voice 复制)
 │   ├── metadata.csv           # 文件名|文本
 │   ├── gpt_sovits.list        # GPT-SoVITS 训练格式 (含本机绝对路径, 不入库)
 │   └── cleaning_report.csv    # 清洗记录 (修复/剔除明细, 供人工复核)
@@ -89,7 +90,7 @@ Chobits-Chi-TTS/
 │   ├── server.py              # TTS HTTP 服务 (api_v2 + API Key 鉴权 + 限流)
 │   └── start_tts_api.sh       # 启动 TTS 服务 (可直接运行或供 systemd 调用)
 ├── training/               # 训练流水线
-│   └── train_chi.py           # 预处理 + SoVITS/GPT 微调一键驱动 (幂等, 可续跑)
+│   └── train_chii.py          # 预处理 + SoVITS/GPT 微调一键驱动 (幂等, 可续跑)
 ├── examples/               # 示例
 │   ├── ref_text.txt           # 参考音频文本 (ep07_00783.96s)
 │   └── target_text.txt        # 推理示例文本
@@ -105,7 +106,7 @@ Chobits-Chi-TTS/
 ### 1. 获取训练数据
 
 ```bash
-# 从 Hugging Face 下载 Chobits-Chi-Voice 数据集 (含 wavs/, metadata.csv, transcripts.csv)
+# 从 Hugging Face 下载 Chobits-Chii-Voice 数据集 (含 wavs/, metadata.csv, transcripts.csv)
 git clone https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice
 ```
 
@@ -157,17 +158,17 @@ python -m nltk.downloader punkt_tab || \
 
 ```bash
 # 回到本仓库根目录, 生成 data/ (修复 Whisper 误转写 18 条, 剔除 4 条)
-python3 tools/clean_dataset.py --src /path/to/Chobits-Chi-Voice/dataset
+python3 tools/clean_dataset.py --src /path/to/Chobits-Chii-Voice/dataset
 ```
 
 ### 4. 训练
 
 ```bash
 # 预处理 + SoVITS + GPT 一键完成 (幂等, 中断后可续跑)
-python training/train_chi.py
+python training/train_chii.py
 ```
 
-训练产物：`GPT-SoVITS/SoVITS_weights_v2Pro/chi_e*.pth`（声学模型）与 `GPT-SoVITS/GPT_weights_v2Pro/chi-e*.ckpt`（语义模型），每 5 个 epoch 保存一次。
+训练产物：`GPT-SoVITS/SoVITS_weights_v2Pro/chii_e*.pth`（声学模型）与 `GPT-SoVITS/GPT_weights_v2Pro/chii-e*.ckpt`（语义模型），每 5 个 epoch 保存一次（首轮历史产物为 `chi_*`/`chi-*` 拼写，保持不动）。
 
 ### 5. 推理
 
@@ -175,8 +176,8 @@ python training/train_chi.py
 cd GPT-SoVITS
 version=v2Pro LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.10/site-packages/nvidia/npp/lib \
 python GPT_SoVITS/inference_cli.py \
-  --gpt_model GPT_weights_v2Pro/chi-e10.ckpt \
-  --sovits_model SoVITS_weights_v2Pro/chi_e10_s1210.pth \
+  --gpt_model GPT_weights_v2Pro/chii-e10.ckpt \
+  --sovits_model SoVITS_weights_v2Pro/chii_e10_s1210.pth \
   --ref_audio ../data/wavs/ep07_00783.96s.wav \
   --ref_text ../examples/ref_text.txt --ref_language 日文 \
   --target_text ../examples/target_text.txt --target_language 日文 \
@@ -198,53 +199,56 @@ pyopenjtalk 加载新版 libstdc++（Ubuntu 20.04 系统库缺 `GLIBCXX_3.4.29`�
 ```bash
 # 启动服务 (0.0.0.0:9880, 加载 models/ 下 e10 权重, v2Pro + cuda fp16)
 # 服务为 tools/server.py: 在上游 api_v2 前加了 API Key 鉴权与限流
-export CHI_TTS_API_KEY=<随机密钥>   # 必填, 未设置会拒绝启动
+export CHII_TTS_API_KEY=<随机密钥>   # 必填, 未设置会拒绝启动 (旧名 CHI_TTS_API_KEY 仍兼容)
 bash tools/start_tts_api.sh 9880
 ```
 
-生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启），密钥通过 `EnvironmentFile` 注入：
+生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启），密钥通过 `EnvironmentFile` 注入。
+单元名示例已由 `chobits-chii-tts` 改为 `chobits-chii-tts`：已部署的旧单元名不受影响、无需改名，
+服务端对旧环境变量名 `CHI_TTS_*` 仍回退兼容；新部署按下面示例使用新名即可：
 
 ```ini
-# /etc/systemd/system/chobits-chi-tts.service
+# /etc/systemd/system/chobits-chii-tts.service
 [Unit]
-Description=Chobits Chi TTS (GPT-SoVITS api_v2)
+Description=Chobits Chii TTS (GPT-SoVITS api_v2)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=ubuntu
-ExecStart=/bin/bash /home/ubuntu/Github/Chobits-Chi-TTS/tools/start_tts_api.sh 9880
+ExecStart=/bin/bash /home/ubuntu/Github/Chobits-Chii-TTS/tools/start_tts_api.sh 9880
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
-EnvironmentFile=/etc/chobits-chi-tts.env
+EnvironmentFile=/etc/chobits-chii-tts.env
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ```bash
-# /etc/chobits-chi-tts.env (chmod 600), 内容:
-#   CHI_TTS_API_KEY=<随机密钥>
-#   CHI_TTS_SSL_CERTFILE=/etc/chobits-chi-tts.crt   (可选, 见下方 TLS)
-#   CHI_TTS_SSL_KEYFILE=/etc/chobits-chi-tts.key    (可选, 与上一条同时设置)
-sudo systemctl daemon-reload && sudo systemctl enable --now chobits-chi-tts
-journalctl -u chobits-chi-tts -f   # 查看日志
+# /etc/chobits-chii-tts.env (chmod 600), 内容:
+#   CHII_TTS_API_KEY=<随机密钥>
+#   CHII_TTS_SSL_CERTFILE=/etc/chobits-chii-tts.crt   (可选, 见下方 TLS)
+#   CHII_TTS_SSL_KEYFILE=/etc/chobits-chii-tts.key    (可选, 与上一条同时设置)
+sudo systemctl daemon-reload && sudo systemctl enable --now chobits-chii-tts
+journalctl -u chobits-chii-tts -f   # 查看日志
 ```
 
 启用 HTTPS（自签名证书，客户端需信任该证书或用 `-k` 跳过校验）：
 
 ```bash
+# 注: 证书 CN 示例已由 chi-tts 改为 chii-tts; 已部署证书不受影响, 重新签发时才用新 CN
 sudo openssl req -x509 -newkey rsa:2048 -nodes \
-  -keyout /etc/chobits-chi-tts.key -out /etc/chobits-chi-tts.crt -days 3650 \
-  -subj "/CN=chi-tts" -addext "subjectAltName=IP:<服务器IP>,IP:127.0.0.1"
-sudo chmod 600 /etc/chobits-chi-tts.key
-# 在 /etc/chobits-chi-tts.env 中设置 CHI_TTS_SSL_CERTFILE / CHI_TTS_SSL_KEYFILE 后重启服务
+  -keyout /etc/chobits-chii-tts.key -out /etc/chobits-chii-tts.crt -days 3650 \
+  -subj "/CN=chii-tts" -addext "subjectAltName=IP:<服务器IP>,IP:127.0.0.1"
+sudo chmod 600 /etc/chobits-chii-tts.key
+# 在 /etc/chobits-chii-tts.env 中设置 CHII_TTS_SSL_CERTFILE / CHII_TTS_SSL_KEYFILE 后重启服务
 ```
 
 OpenAI TTS 兼容调用（推荐；客户端 `baseUrl` 填 `http(s)://<服务器IP>:9880/v1`，
-`GET /v1/models` 返回固定模型 `chi-tts`，`voice` 当前仅 `chi`，`response_format` 支持
+`GET /v1/models` 返回固定模型 `chii-tts`，`voice` 当前仅 `chii`（旧名 `chi`/`chi-default` 作为兼容别名仍可用），`response_format` 支持
 `wav`/`aac`/`opus`，默认 `wav`。`wav` 为流式输出（边合成边推流，首字延迟低）；
 `aac`/`opus` 为合成完成后一次性返回）：
 
@@ -252,7 +256,7 @@ OpenAI TTS 兼容调用（推荐；客户端 `baseUrl` 填 `http(s)://<服务器
 curl -k -X POST https://<服务器IP>:9880/v1/audio/speech \
   -H "Authorization: Bearer <API_KEY>" \
   -H 'Content-Type: application/json' \
-  -d '{"model": "chi-tts", "input": "ちぃ、秀樹のこと、大好き。", "voice": "chi"}' \
+  -d '{"model": "chii-tts", "input": "ちぃ、秀樹のこと、大好き。", "voice": "chii"}' \
   -o out.wav
 # 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
@@ -271,9 +275,9 @@ curl -k -G https://<服务器IP>:9880/tts \
 # 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
 
-其他环境变量：`CHI_TTS_RATE_LIMIT`（`/tts` 与 `/v1/audio/speech` 每 IP 每分钟限流次数，默认 60，0 关闭）；
-`CHI_TTS_SSL_CERTFILE` / `CHI_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）；
-`CHI_TTS_REF_AUDIO` / `CHI_TTS_REF_TEXT_FILE`（覆盖 OpenAI 垫片 `chi` 音色的参考音频/参考文本路径）。
+其他环境变量（均已从 `CHI_TTS_*` 改名 `CHII_TTS_*`，读取时优先新名、读不到回退旧名，老部署无需改动）：`CHII_TTS_RATE_LIMIT`（`/tts` 与 `/v1/audio/speech` 每 IP 每分钟限流次数，默认 60，0 关闭）；
+`CHII_TTS_SSL_CERTFILE` / `CHII_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）；
+`CHII_TTS_REF_AUDIO` / `CHII_TTS_REF_TEXT_FILE`（覆盖 OpenAI 垫片 `chii` 音色的参考音频/参考文本路径）。
 
 注意在云安全组放行 TCP 9880；对外提供服务须遵守 [CC BY-NC-SA 4.0](#许可协议)（非商业）。
 面向公众分发应用时建议由后端服务代为调用，不要把唯一密钥嵌进客户端。
@@ -294,5 +298,5 @@ curl -k -G https://<服务器IP>:9880/tts \
 
 ## 相关项目
 
-- [Chobits-Chi-Voice](https://github.com/chenxin199305/Chobits-Chi-Voice) — 小叽语音数据集（本项目的数据来源）
+- [Chobits-Chii-Voice](https://github.com/chenxin199305/Chobits-Chii-Voice) — 小叽语音数据集（本项目的数据来源）
 - [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) — 底层语音合成框架

@@ -1,4 +1,4 @@
-"""清洗 Chobits-Chi-Voice 数据集, 输出 GPT-SoVITS 可直接使用的训练数据.
+"""清洗 Chobits-Chii-Voice 数据集, 输出 GPT-SoVITS 可直接使用的训练数据.
 
 规则:
   1. 幻听长重复: 同一字符连续重复 >= 8 次 (如 '超火火火...', 'キィィ...') -> 修复或剔除
@@ -22,7 +22,7 @@ import shutil
 import wave
 from pathlib import Path
 
-DEFAULT_SRC = Path.home() / "Github/Chobits-Chi-Voice/dataset"
+DEFAULT_SRC = Path.home() / "Github/Chobits-Chii-Voice/dataset"
 DEFAULT_DST = Path(__file__).resolve().parent.parent / "data"
 
 LATIN_RE = re.compile(r"[A-Za-zЀ-ӿÀ-ɏ]")
@@ -67,7 +67,7 @@ def parse_name(name: str) -> tuple[str, float]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--src", type=Path, default=DEFAULT_SRC, help="Chobits-Chi-Voice dataset 目录")
+    ap.add_argument("--src", type=Path, default=DEFAULT_SRC, help="Chobits-Chii-Voice dataset 目录")
     ap.add_argument("--dst", type=Path, default=DEFAULT_DST, help="输出目录 (默认 <repo>/data)")
     args = ap.parse_args()
     src, dst = args.src, args.dst
@@ -128,7 +128,7 @@ def main() -> None:
     # GPT-SoVITS .list (绝对路径|说话人|语言|文本)
     with open(dst / "gpt_sovits.list", "w", encoding="utf-8") as f:
         for name, text in kept:
-            f.write(f"{dst / 'wavs' / (name + '.wav')}|chi|ja|{text}\n")
+            f.write(f"{dst / 'wavs' / (name + '.wav')}|chii|ja|{text}\n")
 
     with open(dst / "cleaning_report.csv", "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["file", "dur", "action", "reason", "original", "final"])

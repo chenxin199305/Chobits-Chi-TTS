@@ -10,7 +10,11 @@
 
 用法 (在 GPT-SoVITS 目录下运行, 或任意目录, 脚本会自行定位):
   conda activate GPTSoVits
-  python training/train_chi.py [--skip-preprocess] [--skip-s2] [--skip-s1]
+  python training/train_chii.py [--skip-preprocess] [--skip-s2] [--skip-s1]
+
+注: EXP_NAME 已由 "chi" 改为 "chii" (角色官方罗马字 Chii), 改动后新训练产物写入
+GPT-SoVITS/logs/chii/, 权重文件名为 chii_e*.pth / chii-e*.ckpt;
+旧的 logs/chi/ 与 chi-* 历史产物保持不动, 如需续跑旧实验请自行改回 EXP_NAME.
 """
 
 import argparse
@@ -22,10 +26,10 @@ import sys
 
 import yaml
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Chobits-Chi-TTS/
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Chobits-Chii-TTS/
 GS_ROOT = os.path.join(REPO_ROOT, "GPT-SoVITS")
 
-EXP_NAME = "chi"
+EXP_NAME = "chii"
 VERSION = "v2Pro"
 LIST_PATH = os.path.join(REPO_ROOT, "data", "gpt_sovits.list")
 WAV_DIR = os.path.join(REPO_ROOT, "data", "wavs")
