@@ -1,13 +1,13 @@
 # Chobits-Chii-TTS
 
 [![Made with Love](https://img.shields.io/badge/Made%20with-Love-ff69b4.svg)](https://madewithlove.org.in)
-[![GitHub](https://img.shields.io/badge/GitHub-Chobits--Chi--TTS-181717?logo=github)](https://github.com/chenxin199305/Chobits-Chii-TTS)
-[![Dataset: Chobits-Chi-Voice](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Chobits--Chi--Voice-yellow)](https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice)
-[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-Chobits--Chi--TTS-yellow)](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)
+[![GitHub](https://img.shields.io/badge/GitHub-Chobits--Chii--TTS-181717?logo=github)](https://github.com/chenxin199305/Chobits-Chii-TTS)
+[![Dataset: Chobits-Chii-Voice](https://img.shields.io/badge/%F0%9F%A4%97%20Dataset-Chobits--Chii--Voice-yellow)](https://huggingface.co/datasets/chenxin199305/Chobits-Chii-Voice)
+[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Model-Chobits--Chii--TTS-yellow)](https://huggingface.co/chenxin199305/Chobits-Chii-TTS)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Language: Japanese](https://img.shields.io/badge/Language-Japanese-green.svg)]()
 
-> ✅ 首轮模型已训练完成并人工试听通过（GPT-SoVITS v2Pro，e10 checkpoint），权重已发布到 [Hugging Face](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)，见[模型文件](#模型文件)。
+> ✅ 首轮模型已训练完成并人工试听通过（GPT-SoVITS v2Pro，e10 checkpoint），权重已发布到 [Hugging Face](https://huggingface.co/chenxin199305/Chobits-Chii-TTS)，见[模型文件](#模型文件)。
 
 《人形电脑天使心》(Chobits) 中 **小叽 (Chii / ちぃ)** 角色的 TTS（语音合成）模型项目。
 
@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/06c1976c-84c9-4fd2-b472-d5cdfe9be485
 
 ## 数据
 
-训练数据来自 [Chobits-Chi-Voice](https://github.com/chenxin199305/Chobits-Chi-Voice) 数据集（[Hugging Face](https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice)）：
+训练数据来自 [Chobits-Chii-Voice](https://github.com/chenxin199305/Chobits-Chii-Voice) 数据集（[Hugging Face](https://huggingface.co/datasets/chenxin199305/Chobits-Chii-Voice)）：
 
 | 项目 | 数值 |
 | --- | --- |
@@ -53,7 +53,7 @@ https://github.com/user-attachments/assets/06c1976c-84c9-4fd2-b472-d5cdfe9be485
 ## 模型文件
 
 当前首选权重（人工试听选定，v2Pro，e10）已发布到 Hugging Face：
-**[huggingface.co/chenxin199305/Chobits-Chi-TTS](https://huggingface.co/chenxin199305/Chobits-Chi-TTS)**
+**[huggingface.co/chenxin199305/Chobits-Chii-TTS](https://huggingface.co/chenxin199305/Chobits-Chii-TTS)**
 
 ```bash
 # 下载模型 (约 290MB)
@@ -107,7 +107,7 @@ Chobits-Chii-TTS/
 
 ```bash
 # 从 Hugging Face 下载 Chobits-Chii-Voice 数据集 (含 wavs/, metadata.csv, transcripts.csv)
-git clone https://huggingface.co/datasets/chenxin199305/Chobits-Chi-Voice
+git clone https://huggingface.co/datasets/chenxin199305/Chobits-Chii-Voice
 ```
 
 ### 2. 搭建环境
