@@ -6,13 +6,10 @@
   - 限流: /tts 与 /v1/audio/speech 每 IP 每分钟最多 CHII_TTS_RATE_LIMIT 次 (默认 60, 设 0 关闭).
   - TLS: 同时设置 CHII_TTS_SSL_CERTFILE / CHII_TTS_SSL_KEYFILE 时以 HTTPS 启动.
 
-环境变量已从 CHI_TTS_* 改名为 CHII_TTS_* (角色官方罗马字 Chii);
-读取时优先新名, 读不到回退旧名 CHI_TTS_*, 老部署无需改动即可继续运行.
-
 另提供 OpenAI TTS 兼容垫片 (客户端 baseUrl 填 http(s)://<IP>:9880/v1):
   - GET  /v1/models        → 固定返回 chii-tts
   - POST /v1/audio/speech  → OpenAI TTS 协议: {"model", "input", "voice", "response_format"?, "speed"?}
-    voice 映射服务端参考音频 (当前仅 "chii"; 旧名 "chi"/"chi-default" 作为兼容别名归一到 "chii");
+    voice 映射服务端参考音频 (当前仅 "chii");
     response_format 支持 wav/aac/opus
     (默认 wav; mp3/flac/pcm 暂不支持, 返回 400); speed (0.25~4.0) 映射 speed_factor;
     text_lang 由服务端钉死 (auto, 不支持则回退 ja), 其余采样参数取 api_v2 默认值.
@@ -33,13 +30,13 @@ from collections import defaultdict, deque
 
 
 def _getenv(suffix: str, default: str = "") -> str:
-    """读取 CHII_TTS_<suffix>, 未设置时回退旧名 CHI_TTS_<suffix> (老部署兼容)."""
-    return os.environ.get(f"CHII_TTS_{suffix}") or os.environ.get(f"CHI_TTS_{suffix}", default)
+    """读取 CHII_TTS_<suffix> 环境变量."""
+    return os.environ.get(f"CHII_TTS_{suffix}", default)
 
 
 API_KEY = _getenv("API_KEY")
 if not API_KEY:
-    sys.exit("[错误] 未设置 CHII_TTS_API_KEY 环境变量 (旧名 CHI_TTS_API_KEY 也可), 拒绝以无鉴权方式启动")
+    sys.exit("[错误] 未设置 CHII_TTS_API_KEY 环境变量, 拒绝以无鉴权方式启动")
 
 RATE_LIMIT = int(_getenv("RATE_LIMIT", "60"))
 
@@ -61,7 +58,7 @@ _hits: dict[str, deque] = defaultdict(deque)
 
 # --- OpenAI TTS 兼容垫片 -------------------------------------------------
 # voice → 服务端参考音频映射 (ref_audio_path 是服务器本地路径, 客户端不可见);
-# 可用 CHII_TTS_REF_AUDIO / CHII_TTS_REF_TEXT_FILE 覆盖默认参考音频与参考文本 (旧名 CHI_TTS_* 回退兼容)
+# 可用 CHII_TTS_REF_AUDIO / CHII_TTS_REF_TEXT_FILE 覆盖默认参考音频与参考文本
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ref_text_file = _getenv("REF_TEXT_FILE", os.path.join(REPO_ROOT, "models", "ref_text.txt"))
 try:
@@ -77,8 +74,6 @@ VOICES = {
         "prompt_lang": "ja",
     },
 }
-# 旧客户端兼容别名: 在 voice 校验前归一到新音色名
-VOICE_ALIASES = {"chi": "chii", "chi-default": "chii"}
 TTS_MODEL = "chii-tts"
 # OpenAI response_format → api_v2 media_type (ogg 即 opus 的 ogg 封装);
 # mp3/flac/pcm 暂不支持
@@ -108,7 +103,6 @@ async def openai_audio_speech(request: Request):
     if not text:
         return _openai_error(400, "input 不能为空")
     voice = str(body.get("voice") or "chii")
-    voice = VOICE_ALIASES.get(voice, voice)
     if voice not in VOICES:
         return _openai_error(400, f"voice: {voice} 不存在, 可用: {sorted(VOICES)}")
     fmt = str(body.get("response_format") or "wav").lower()

@@ -63,12 +63,12 @@ hf download chenxin199305/Chobits-Chii-TTS --local-dir models/
 
 | 文件 | 说明 |
 | --- | --- |
-| `chi-e10.ckpt` | GPT 语义模型（149MB） |
-| `chi_e10_s1210.pth` | SoVITS 声学模型（129MB） |
+| `chii-e10.ckpt` | GPT 语义模型（149MB） |
+| `chii_e10_s1210.pth` | SoVITS 声学模型（129MB） |
 | `ref_audio.wav` | 参考音频（ep07「秀樹は地位を拾ってくれた」，4.2s） |
 | `ref_text.txt` | 参考音频对应文本（同 `examples/ref_text.txt`） |
 
-首轮发布的权重文件名沿用 `chi-*`/`chi_*` 拼写（已发布的历史产物不改名）；本地重新训练的产物将为 `chii-*`/`chii_*`。
+首轮发布的权重已在 Hugging Face 上统一更名为 `chii-*`/`chii_*` 拼写；本地历史训练产物（`GPT-SoVITS/` 目录下）保持 `chi-*`/`chi_*` 原名不动。
 下载后可直接推理（见快速开始第 5 步，将权重路径替换为 `models/` 内文件），无需训练。
 本地训练产生的全部 checkpoint 在 `GPT-SoVITS/GPT_weights_v2Pro/` 与 `GPT-SoVITS/SoVITS_weights_v2Pro/`（e5/e10/e15），试听样本在 `outputs/inference/`。
 
@@ -199,13 +199,11 @@ pyopenjtalk 加载新版 libstdc++（Ubuntu 20.04 系统库缺 `GLIBCXX_3.4.29`�
 ```bash
 # 启动服务 (0.0.0.0:9880, 加载 models/ 下 e10 权重, v2Pro + cuda fp16)
 # 服务为 tools/server.py: 在上游 api_v2 前加了 API Key 鉴权与限流
-export CHII_TTS_API_KEY=<随机密钥>   # 必填, 未设置会拒绝启动 (旧名 CHI_TTS_API_KEY 仍兼容)
+export CHII_TTS_API_KEY=<随机密钥>   # 必填, 未设置会拒绝启动
 bash tools/start_tts_api.sh 9880
 ```
 
-生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启），密钥通过 `EnvironmentFile` 注入。
-单元名示例已由 `chobits-chii-tts` 改为 `chobits-chii-tts`：已部署的旧单元名不受影响、无需改名，
-服务端对旧环境变量名 `CHI_TTS_*` 仍回退兼容；新部署按下面示例使用新名即可：
+生产环境建议用 systemd 守护（开机自启 + 崩溃自动重启），密钥通过 `EnvironmentFile` 注入：
 
 ```ini
 # /etc/systemd/system/chobits-chii-tts.service
@@ -239,7 +237,6 @@ journalctl -u chobits-chii-tts -f   # 查看日志
 启用 HTTPS（自签名证书，客户端需信任该证书或用 `-k` 跳过校验）：
 
 ```bash
-# 注: 证书 CN 示例已由 chi-tts 改为 chii-tts; 已部署证书不受影响, 重新签发时才用新 CN
 sudo openssl req -x509 -newkey rsa:2048 -nodes \
   -keyout /etc/chobits-chii-tts.key -out /etc/chobits-chii-tts.crt -days 3650 \
   -subj "/CN=chii-tts" -addext "subjectAltName=IP:<服务器IP>,IP:127.0.0.1"
@@ -248,7 +245,7 @@ sudo chmod 600 /etc/chobits-chii-tts.key
 ```
 
 OpenAI TTS 兼容调用（推荐；客户端 `baseUrl` 填 `http(s)://<服务器IP>:9880/v1`，
-`GET /v1/models` 返回固定模型 `chii-tts`，`voice` 当前仅 `chii`（旧名 `chi`/`chi-default` 作为兼容别名仍可用），`response_format` 支持
+`GET /v1/models` 返回固定模型 `chii-tts`，`voice` 当前仅 `chii`，`response_format` 支持
 `wav`/`aac`/`opus`，默认 `wav`。`wav` 为流式输出（边合成边推流，首字延迟低）；
 `aac`/`opus` 为合成完成后一次性返回）：
 
@@ -275,7 +272,7 @@ curl -k -G https://<服务器IP>:9880/tts \
 # 未启用 TLS 时把 https 换成 http、去掉 -k 即可
 ```
 
-其他环境变量（均已从 `CHI_TTS_*` 改名 `CHII_TTS_*`，读取时优先新名、读不到回退旧名，老部署无需改动）：`CHII_TTS_RATE_LIMIT`（`/tts` 与 `/v1/audio/speech` 每 IP 每分钟限流次数，默认 60，0 关闭）；
+其他环境变量：`CHII_TTS_RATE_LIMIT`（`/tts` 与 `/v1/audio/speech` 每 IP 每分钟限流次数，默认 60，0 关闭）；
 `CHII_TTS_SSL_CERTFILE` / `CHII_TTS_SSL_KEYFILE`（同时设置时以 HTTPS 启动）；
 `CHII_TTS_REF_AUDIO` / `CHII_TTS_REF_TEXT_FILE`（覆盖 OpenAI 垫片 `chii` 音色的参考音频/参考文本路径）。
 
